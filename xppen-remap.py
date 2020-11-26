@@ -43,19 +43,20 @@ import os
 
 # Frame buttons remapping.
 # Change the right column to set your own mapping
+# Beware that those are the keycodes before langage changes. Determine them with evtest
 map = {
 'b1':[evdev.ecodes.KEY_S, evdev.ecodes.KEY_LEFTCTRL],        # btn 1
-'b2':evdev.ecodes.KEY_2,        # btn 2
-'b3':evdev.ecodes.KEY_3,        # btn 3
-'b4':evdev.ecodes.KEY_4,        # btn 4
-'b5':evdev.ecodes.KEY_5,        # btn 5
-'b6':evdev.ecodes.KEY_6,        # btn 6
-'b7':evdev.ecodes.KEY_7,        # btn 7
-'b8':evdev.ecodes.KEY_8,        # btn 8
-'owr':evdev.ecodes.KEY_C,    # Outer wheel clockwise
-'owl':evdev.ecodes.KEY_D,   # Outer wheel anti-clockwise
+'b2':[evdev.ecodes.KEY_W, evdev.ecodes.KEY_LEFTCTRL],  # CTRL + Z
+'b3':evdev.ecodes.KEY_SEMICOLON,        # ; <->M
+'b4':evdev.ecodes.KEY_BACKSLASH,        # btn 4
+'b5':evdev.ecodes.KEY_B,        # btn 5
+'b6':evdev.ecodes.KEY_E,        # btn 6
+'b7':evdev.ecodes.KEY_LEFTSHIFT,        # btn 7
+'b8':evdev.ecodes.KEY_LEFTCTRL,        # btn 8
+'owr':evdev.ecodes.KEY_O,    # Outer wheel clockwise
+'owl':evdev.ecodes.KEY_I,   # Outer wheel anti-clockwise
 'iwt':evdev.ecodes.KEY_A,       # Inner wheel top
-'iwb':evdev.ecodes.KEY_B        # Inner wheel bottom
+'iwb':evdev.ecodes.KEY_C        # Inner wheel bottom
 # 'pt':evdev.ecodes.BTN_MIDDLE,   # pen btn near tip
 # 'pr':evdev.ecodes.BTN_RIGHT,    # pen btn near rear
 }
@@ -98,18 +99,22 @@ async def remap_kbd(kbd,vkbd):
                 else:
                     if ev.value == 2:
                         # Key held: one can pass event
-                        print_key_status(btn[0], ev.value)
+                        remap_and_trigger(btn, ev.value, vkbd)
+                        #print_key_status(btn[0], ev.value)
                     elif ev.value == 0:
                         # Key is released
                         if last_ev.code == ev.code:
                             # Same key code as before
                             if last_ev.value == 2:
                                 # key was held before, print release
-                                print_key_status(btn[0], ev.value)
+                                remap_and_trigger(btn[0], ev.value, vkbd)
+                                # print_key_status(btn[0], ev.value)
                             else:
                                 # launch key-press event filtered before
-                                print_key_status(btn[0], 1)
-                                print_key_status(btn[0], 0)
+                                remap_and_trigger(btn[0], 1, vkbd)
+                                remap_and_trigger(btn[0], 0, vkbd)
+                                # print_key_status(btn[0], 1)
+                                # print_key_status(btn[0], 0)
                         else:
                             # Other key code before, then it was indeed a modifier
                             pass
