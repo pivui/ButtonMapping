@@ -92,6 +92,7 @@ async def remap_device(device,vkbd):
     last_ev     = []
     async for ev in device.async_read_loop():
         if ev.type == evdev.ecodes.EV_KEY:
+            # Frame buttons
             if ev.code in btn_remap:
                 btn = btn_remap[ev.code]
                 if isinstance(btn, str):
@@ -125,8 +126,9 @@ async def remap_device(device,vkbd):
                 # Saving previous event
                 last_ev = ev
         elif ev.type == evdev.ecodes.EV_REL:
+            # Inner wheel
             if ev.code == evdev.ecodes.REL_WHEEL_HI_RES:
-                # As they are mapped to key here, the following code simulate
+                # As they are mapped to key here, the following code simulates
                 # a key press and release
                 if ev.value > 0: #top
                     remap_and_trigger('iwt',1,vkbd)
@@ -134,24 +136,21 @@ async def remap_device(device,vkbd):
                 else: # bottom
                     remap_and_trigger('iwb',1,vkbd)
                     remap_and_trigger('iwb',0,vkbd)
-
-
         else:
             # do nothing
             pass
             # rethrow other events
             # vkbd.write_event(ev)
 
-
-##
-def print_key_status(key, val):
-    if val == 1:
-        print('Key {} pressed'.format(key))
-    elif val == 2:
-        print('Key {} held'.format(key))
-    else:
-        print('Key {} released'.format(key))
-#
+## legacy for debug
+# def print_key_status(key, val):
+#     if val == 1:
+#         print('Key {} pressed'.format(key))
+#     elif val == 2:
+#         print('Key {} held'.format(key))
+#     else:
+#         print('Key {} released'.format(key))
+# #
 
 # Find the device based on vendor/product id
 vendor   = int('028bd',16)
@@ -185,19 +184,18 @@ for key, value in map.items():
         list_of_keys.append(value)
     else:
         list_of_keys = list_of_keys + value
-#
+# Adding as capabilities the key I want to remap to + some mouse-related event
+# to be able to detect them
 cap     = {evdev.ecodes.EV_KEY: list_of_keys,
          evdev.ecodes.EV_REL: [0, 1, 11, 12]}
-#
+# Virtual keyboard
 vkbd    = evdev.UInput(cap,name="XP-Pen Innovator 16 Buttons")
 # Monopolize the original one
 kbd.grab()
 mou.grab()
-
-
 # Launch the listener
 for device in kbd, mou:
     asyncio.ensure_future(remap_device(device, vkbd))
-
+#
 event_loop = asyncio.get_event_loop()
 event_loop.run_forever()
